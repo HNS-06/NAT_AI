@@ -261,3 +261,28 @@ Please retry in 53.979903985s. [{"@type":"type.googleapis.com/google.rpc.Help","
   "status": 429,
   "statusText": "Too Many Requests"
 }
+2026-01-29T02:49:50.584Z - Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent: [429 Too Many Requests] You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+{
+  "status": 429,
+  "statusText": "Too Many Requests"
+}
+2026-01-29T02:53:36.606Z - Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: [404 Not Found] models/gemini-1.5-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+{
+  "status": 404,
+  "statusText": "Not Found"
+}
+2026-01-29T02:57:32.975Z - Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent: [404 Not Found] models/gemini-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+{
+  "status": 404,
+  "statusText": "Not Found"
+}
+2026-01-29T03:01:44.240Z - Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-latest:generateContent: [429 Too Many Requests] You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+{
+  "status": 429,
+  "statusText": "Too Many Requests"
+}
+2026-01-29T03:04:24.811Z - Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent: [429 Too Many Requests] You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. 
+{
+  "status": 429,
+  "statusText": "Too Many Requests"
+}

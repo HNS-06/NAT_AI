@@ -20,13 +20,13 @@ export default function Header() {
             <div className="w-10 h-10 relative">
               <img
                 src="/assets/logo.png"
-                alt="Nat"
+                alt="NAT"
                 className="w-full h-full object-contain"
               />
             </div>
             <div>
               <h1 className="text-xl font-bold bg-gradient-to-r from-primary via-chart-1 to-chart-2 bg-clip-text text-transparent">
-                Nat
+                NAT
               </h1>
               <p className="text-xs text-muted-foreground">Your intelligent companion</p>
             </div>

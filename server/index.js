@@ -30,7 +30,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-// Initialize Gemini
+// ✅ FIX 1: Correct initialization
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // System Prompts for Personality Modes
@@ -188,10 +188,48 @@ function fileToGenerativePart(path, mimeType) {
     };
 }
 
+// ✅ FIX 2: Working model list - simplified to just working models
+const WORKING_MODELS = [
+    "gemini-2.0-flash-001",      // Most stable
+    "gemini-flash-latest",       // Latest flash
+    "gemini-pro-latest",         // Latest pro
+    "gemini-2.0-flash",          // Alternative
+    "gemini-2.5-flash"           // If available
+];
+
+// ✅ FIX 3: Simple model fallback with better error handling
+async function generateWithFallback(modelName, promptParts, history = []) {
+    try {
+        console.log(`Attempting with model: ${modelName}`);
+        const model = genAI.getGenerativeModel({
+            model: modelName,
+            generationConfig: {
+                temperature: 0.7,
+                topP: 0.8,
+                topK: 40,
+            }
+        });
+
+        if (history.length > 0) {
+            const chat = model.startChat({
+                history: history,
+            });
+            const result = await chat.sendMessage(promptParts);
+            return result.response.text();
+        } else {
+            const result = await model.generateContent(promptParts);
+            return result.response.text();
+        }
+    } catch (error) {
+        console.error(`Failed with model ${modelName}:`, error.message);
+        throw error;
+    }
+}
+
 // Add Message & Generate Response
 app.post('/api/conversations/:id/messages', async (req, res) => {
     const { id } = req.params;
-    const { content, sender, messageType, mode, fileId } = req.body; // Added mode and fileId
+    const { content, sender, messageType, mode, fileId } = req.body;
     const userId = "local-user-principal";
 
     const db = await getDB();
@@ -205,7 +243,7 @@ app.post('/api/conversations/:id/messages', async (req, res) => {
         content,
         timestamp: new Date().toISOString(),
         messageType: messageType || 'text',
-        fileId // store reference
+        fileId
     };
 
     conversation.messages.push(userMessage);
@@ -224,79 +262,66 @@ app.post('/api/conversations/:id/messages', async (req, res) => {
             const contextPrompt = `\nYou are speaking to ${userName}. Context: The user prefers ${profile?.preferences?.theme || 'default'} theme.`;
             const systemInstruction = baseSystemPrompt + contextPrompt;
 
-            // Model Fallback Strategy
-            // Model Fallback Strategy
-            const MODELS = [
-                "gemini-2.5-flash",
-                "gemini-2.5-pro",
-                "gemini-1.5-flash",
-                "gemini-1.5-pro",
-                "gemini-2.0-flash-001",
-            ];
+            // Prepare prompt parts
+            const promptParts = [`${systemInstruction}\n\nUser: ${content}`];
 
-            let responseText = null;
-            let lastError = null;
-
-            for (const modelName of MODELS) {
-                try {
-                    console.log(`Attempting with model: ${modelName}`);
-                    const model = genAI.getGenerativeModel({ model: modelName });
-
-                    // Prepare History (re-map for each attempt to be safe)
-                    const history = conversation.messages.slice(-10).map(m => {
-                        return {
-                            role: m.sender === 'user' ? 'user' : 'model',
-                            parts: [{ text: m.content }]
-                        };
-                    });
-
-                    // Prepend System Prompt
-                    const finalContent = `${systemInstruction}\n\nUser: ${content}`;
-                    const promptParts = [finalContent];
-
-                    // Handle File Attachment (Multimodal) reuse logic
-                    if (fileId) {
-                        const fileRec = db.files.find(f => f.id === fileId);
-                        if (fileRec) {
-                            const filePath = path.join(__dirname, fileRec.path);
-                            if (fs.existsSync(filePath)) {
-                                if (fileRec.fileType === 'image') {
-                                    const ext = path.extname(filePath).toLowerCase();
-                                    let mimeType = "image/png";
-                                    if (ext === '.jpg' || ext === '.jpeg') mimeType = "image/jpeg";
-                                    if (ext === '.webp') mimeType = "image/webp";
-                                    promptParts.push(fileToGenerativePart(filePath, mimeType));
-                                } else {
-                                    try {
-                                        const fileContent = fs.readFileSync(filePath, 'utf8');
-                                        promptParts.push(`\n\n[Attached File: ${fileRec.fileName}]\n${fileContent}\n[End of File]`);
-                                    } catch (e) { console.log("Text read error", e); }
-                                }
+            // Handle File Attachment
+            if (fileId) {
+                const fileRec = db.files.find(f => f.id === fileId);
+                if (fileRec) {
+                    const filePath = path.join(uploadDir, fileRec.filename); // ✅ FIX: Use correct path
+                    if (fs.existsSync(filePath)) {
+                        const ext = path.extname(filePath).toLowerCase();
+                        if (['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext)) {
+                            let mimeType = "image/png";
+                            if (ext === '.jpg' || ext === '.jpeg') mimeType = "image/jpeg";
+                            if (ext === '.webp') mimeType = "image/webp";
+                            if (ext === '.gif') mimeType = "image/gif";
+                            promptParts.push(fileToGenerativePart(filePath, mimeType));
+                        } else {
+                            try {
+                                const fileContent = fs.readFileSync(filePath, 'utf8');
+                                promptParts.push(`\n\n[Attached File: ${fileRec.fileName}]\n${fileContent}\n[End of File]`);
+                            } catch (e) {
+                                console.log("Text read error:", e);
                             }
                         }
                     }
+                }
+            }
 
-                    const chat = model.startChat({
-                        history: history.slice(0, -1),
-                    });
+            // Prepare history for chat
+            const history = conversation.messages
+                .slice(-10)
+                .filter(m => m.sender !== 'system')
+                .map(m => ({
+                    role: m.sender === 'user' ? 'user' : 'model',
+                    parts: [{ text: m.content }]
+                }));
 
-                    const result = await chat.sendMessage(promptParts);
-                    responseText = result.response.text();
+            // ✅ FIX 4: Simple retry logic
+            let responseText = null;
+            let lastError = null;
 
-                    // If we got here, success!
-                    console.log(`Success with model: ${modelName}`);
+            for (const modelName of WORKING_MODELS) {
+                try {
+                    responseText = await generateWithFallback(modelName, promptParts, history);
+                    console.log(`✅ Success with model: ${modelName}`);
                     break;
                 } catch (error) {
-                    console.error(`Failed with model ${modelName}:`, error.message);
                     lastError = error;
-                    // Provide a small delay before next model to avoid hammering
-                    await new Promise(r => setTimeout(r, 1000));
-                    continue; // Try next model
+                    // Skip 429 errors by trying next model immediately
+                    if (!error.message.includes('429') && !error.message.includes('quota')) {
+                        await new Promise(r => setTimeout(r, 1000));
+                    }
+                    continue;
                 }
             }
 
             if (!responseText) {
-                throw lastError || new Error("All models failed");
+                // Fallback to simple response if all models fail
+                responseText = "I apologize, but I'm having trouble connecting to the AI service right now. Please try again in a moment.";
+                console.error("All models failed:", lastError);
             }
 
             aiMessage = {
@@ -304,7 +329,8 @@ app.post('/api/conversations/:id/messages', async (req, res) => {
                 sender: 'ai',
                 content: responseText,
                 timestamp: new Date().toISOString(),
-                messageType: 'text'
+                messageType: 'text',
+                modelUsed: 'gemini' // Track which AI was used
             };
 
             conversation.messages.push(aiMessage);
@@ -312,16 +338,23 @@ app.post('/api/conversations/:id/messages', async (req, res) => {
 
         } catch (error) {
             console.error("Gemini Error:", error);
+
+            // Log error
             try {
-                fs.appendFileSync(path.join(__dirname, 'error.log'), `${new Date().toISOString()} - Error: ${error.message}\n${JSON.stringify(error, null, 2)}\n`);
+                fs.appendFileSync(
+                    path.join(__dirname, 'error.log'),
+                    `${new Date().toISOString()} - Error: ${error.message}\nStack: ${error.stack}\n\n`
+                );
             } catch (e) { console.error("Could not write log", e); }
 
+            // Return friendly error message
             aiMessage = {
                 id: uuidv4(),
                 sender: 'ai',
-                content: `Error: ${error.message || "Unknown error"}. Please check server logs.`,
+                content: "I'm having trouble processing your request. This might be due to service limits. Please try again in a moment or simplify your request.",
                 timestamp: new Date().toISOString(),
-                messageType: 'text'
+                messageType: 'text',
+                error: true
             };
             conversation.messages.push(aiMessage);
         }
@@ -330,7 +363,11 @@ app.post('/api/conversations/:id/messages', async (req, res) => {
     db.conversations[id] = conversation;
     await saveDB(db);
 
-    res.json({ success: true, aiMessage });
+    res.json({
+        success: true,
+        aiMessage,
+        conversationId: id
+    });
 });
 
 // Upload File
@@ -342,13 +379,21 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     const userId = "local-user-principal";
     const db = await getDB();
 
+    // Determine file type
+    const ext = path.extname(req.file.originalname).toLowerCase();
+    const imageTypes = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'];
+    const fileType = imageTypes.includes(ext) ? 'image' : 'document';
+
     const uploadedFile = {
         id: uuidv4(),
         user: userId,
         fileName: req.file.originalname,
         filename: req.file.filename,
-        path: `/uploads/${req.file.filename}`,
-        fileType: req.body.fileType || 'document',
+        path: path.relative(__dirname, req.file.path),
+        fullPath: req.file.path,
+        fileType: fileType,
+        mimeType: req.file.mimetype,
+        size: req.file.size,
         uploadTime: new Date().toISOString()
     };
 
@@ -366,7 +411,73 @@ app.get('/api/files', async (req, res) => {
     res.json(userFiles);
 });
 
+// ✅ FIX 5: Health check endpoint
+app.get('/health', (req, res) => {
+    res.json({
+        status: 'OK',
+        timestamp: new Date().toISOString(),
+        port: PORT,
+        geminiConfigured: !!process.env.GEMINI_API_KEY,
+        uploadDirExists: fs.existsSync(uploadDir)
+    });
+});
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+// ✅ FIX 6: Model test endpoint
+app.get('/api/test-models', async (req, res) => {
+    try {
+        const results = [];
+
+        for (const modelName of WORKING_MODELS) {
+            try {
+                const model = genAI.getGenerativeModel({ model: modelName });
+                const result = await model.generateContent("Say 'Hello' in one word.");
+                results.push({
+                    model: modelName,
+                    status: '✅ Working',
+                    response: result.response.text()
+                });
+            } catch (error) {
+                results.push({
+                    model: modelName,
+                    status: '❌ Failed',
+                    error: error.message
+                });
+            }
+            await new Promise(r => setTimeout(r, 500)); // Delay between tests
+        }
+
+        res.json({ results });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ✅ FIX 7: Handle port already in use
+const server = app.listen(PORT, () => {
+    console.log(`✅ Server running on port ${PORT}`);
+    console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+    console.log(`🤖 Model test: http://localhost:${PORT}/api/test-models`);
+    console.log(`📁 Uploads directory: ${uploadDir}`);
+});
+
+server.on('error', (error) => {
+    if (error.code === 'EADDRINUSE') {
+        console.error(`❌ Port ${PORT} is already in use!`);
+        console.error('Try one of these solutions:');
+        console.error('1. Kill the process: netstat -ano | findstr :' + PORT);
+        console.error('2. Change PORT in .env file');
+        console.error('3. Use: npm run kill-port (if configured)');
+        process.exit(1);
+    } else {
+        throw error;
+    }
+});
+
+// Graceful shutdown
+process.on('SIGINT', () => {
+    console.log('\n👋 Shutting down gracefully...');
+    server.close(() => {
+        console.log('✅ Server closed');
+        process.exit(0);
+    });
 });

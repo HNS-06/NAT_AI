@@ -77,6 +77,154 @@
       ],
       "startTime": "2026-01-25T15:35:57.093Z",
       "lastActive": "2026-01-25T15:35:59.754Z"
+    },
+    "conv_1769654983327": {
+      "id": "conv_1769654983327",
+      "user": "local-user-principal",
+      "messages": [
+        {
+          "id": "f39a3493-f0ca-4835-9eaa-35dc4b14245a",
+          "sender": "user",
+          "content": "hi",
+          "timestamp": "2026-01-29T02:49:43.531Z",
+          "messageType": "text"
+        },
+        {
+          "id": "3e6dcc4b-6739-490b-a4f1-618ce74102bd",
+          "sender": "ai",
+          "content": "Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent: [429 Too Many Requests] You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. . Please check server logs.",
+          "timestamp": "2026-01-29T02:49:50.589Z",
+          "messageType": "text"
+        }
+      ],
+      "startTime": "2026-01-29T02:49:43.462Z",
+      "lastActive": "2026-01-29T02:49:43.531Z"
+    },
+    "conv_1769655213167": {
+      "id": "conv_1769655213167",
+      "user": "local-user-principal",
+      "messages": [
+        {
+          "id": "0b0b1331-63ed-410b-a91a-fb81c700330d",
+          "sender": "user",
+          "content": "hi nat you doing good?",
+          "timestamp": "2026-01-29T02:53:33.347Z",
+          "messageType": "text"
+        },
+        {
+          "id": "cedac889-cc46-41ff-aba4-c15a13313d74",
+          "sender": "ai",
+          "content": "Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent: [404 Not Found] models/gemini-1.5-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.. Please check server logs.",
+          "timestamp": "2026-01-29T02:53:36.606Z",
+          "messageType": "text"
+        }
+      ],
+      "startTime": "2026-01-29T02:53:33.276Z",
+      "lastActive": "2026-01-29T02:53:33.347Z"
+    },
+    "conv_1769655448417": {
+      "id": "conv_1769655448417",
+      "user": "local-user-principal",
+      "messages": [
+        {
+          "id": "1b821886-2426-4859-938a-6dbf999f3166",
+          "sender": "user",
+          "content": "hi",
+          "timestamp": "2026-01-29T02:57:28.558Z",
+          "messageType": "text"
+        },
+        {
+          "id": "4834328f-5056-483f-a85c-f2359b7d74af",
+          "sender": "ai",
+          "content": "Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent: [404 Not Found] models/gemini-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.. Please check server logs.",
+          "timestamp": "2026-01-29T02:57:32.979Z",
+          "messageType": "text"
+        }
+      ],
+      "startTime": "2026-01-29T02:57:28.497Z",
+      "lastActive": "2026-01-29T02:57:28.558Z"
+    },
+    "conv_1769655698375": {
+      "id": "conv_1769655698375",
+      "user": "local-user-principal",
+      "messages": [
+        {
+          "id": "90ade957-02d5-4a0c-8ac5-a49dbed7818b",
+          "sender": "user",
+          "content": "hi",
+          "timestamp": "2026-01-29T03:01:38.562Z",
+          "messageType": "text"
+        },
+        {
+          "id": "d90170cd-47ea-4387-9134-697c866ab110",
+          "sender": "ai",
+          "content": "Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-pro-latest:generateContent: [429 Too Many Requests] You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. . Please check server logs.",
+          "timestamp": "2026-01-29T03:01:44.245Z",
+          "messageType": "text"
+        }
+      ],
+      "startTime": "2026-01-29T03:01:38.490Z",
+      "lastActive": "2026-01-29T03:01:38.562Z"
+    },
+    "conv_1769655850484": {
+      "id": "conv_1769655850484",
+      "user": "local-user-principal",
+      "messages": [
+        {
+          "id": "ca67a675-856b-4ed8-b4ea-f12fd1511a84",
+          "sender": "user",
+          "content": "hi",
+          "timestamp": "2026-01-29T03:04:10.628Z",
+          "messageType": "text"
+        },
+        {
+          "id": "c97e2f2f-71da-4120-95fb-acc75e174f8c",
+          "sender": "ai",
+          "content": "Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent: [429 Too Many Requests] You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. . Please check server logs.",
+          "timestamp": "2026-01-29T03:04:24.815Z",
+          "messageType": "text"
+        }
+      ],
+      "startTime": "2026-01-29T03:04:10.565Z",
+      "lastActive": "2026-01-29T03:04:10.628Z"
+    },
+    "conv_1769657661018": {
+      "id": "conv_1769657661018",
+      "user": "local-user-principal",
+      "messages": [
+        {
+          "id": "2a14e2ea-b343-4289-8940-1f89733b4ffb",
+          "sender": "user",
+          "content": "hi",
+          "timestamp": "2026-01-29T03:34:21.194Z",
+          "messageType": "text"
+        },
+        {
+          "id": "bf971868-3e22-4616-bc9c-c0e88699da17",
+          "sender": "ai",
+          "content": "I apologize, but I'm having trouble connecting to the AI service right now. Please try again in a moment.",
+          "timestamp": "2026-01-29T03:34:22.791Z",
+          "messageType": "text",
+          "modelUsed": "gemini"
+        },
+        {
+          "id": "b3e4f313-ae8b-4046-a2e5-d01c71182ec9",
+          "sender": "user",
+          "content": "hi",
+          "timestamp": "2026-01-29T03:55:47.236Z",
+          "messageType": "text"
+        },
+        {
+          "id": "341cfc32-0704-4a41-970a-f1c680ca08a6",
+          "sender": "ai",
+          "content": "I apologize, but I'm having trouble connecting to the AI service right now. Please try again in a moment.",
+          "timestamp": "2026-01-29T03:55:48.471Z",
+          "messageType": "text",
+          "modelUsed": "gemini"
+        }
+      ],
+      "startTime": "2026-01-29T03:34:21.113Z",
+      "lastActive": "2026-01-29T03:55:48.471Z"
     }
   },
   "files": []
