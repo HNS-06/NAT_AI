@@ -1,0 +1,68 @@
+
+> personal-ai-assistant-server@1.0.0 dev
+> nodemon index.js
+
+[33m[nodemon] 3.1.11[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node index.js`[39m
+✅ Server running on port 3002
+🔗 Health check: http://localhost:3002/health
+🤖 Model test: http://localhost:3002/api/test-models
+📁 Uploads directory: f:\Projects\personal-ai-assistant\server\uploads
+[32m[nodemon] restarting due to changes...[39m
+🤖 Trying model: gemini-2.0-flash
+[32m[nodemon] starting `node index.js`[39m
+✅ Server running on port 3002
+🔗 Health check: http://localhost:3002/health
+🤖 Model test: http://localhost:3002/api/test-models
+📁 Uploads directory: f:\Projects\personal-ai-assistant\server\uploads
+[32m[nodemon] restarting due to changes...[39m
+🤖 Trying model: gemini-2.0-flash
+[32m[nodemon] starting `node index.js`[39m
+✅ Server running on port 3002
+🔗 Health check: http://localhost:3002/health
+🤖 Model test: http://localhost:3002/api/test-models
+📁 Uploads directory: f:\Projects\personal-ai-assistant\server\uploads
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+❌ Port 3002 is already in use!
+Try one of these solutions:
+1. Kill the process: netstat -ano | findstr :3002
+2. Change PORT in .env file
+3. Use: npm run kill-port (if configured)
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+❌ Port 3002 is already in use!
+Try one of these solutions:
+1. Kill the process: netstat -ano | findstr :3002
+2. Change PORT in .env file
+3. Use: npm run kill-port (if configured)
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+❌ Port 3002 is already in use!
+Try one of these solutions:
+1. Kill the process: netstat -ano | findstr :3002
+2. Change PORT in .env file
+3. Use: npm run kill-port (if configured)
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+❌ Port 3002 is already in use!
+Try one of these solutions:
+1. Kill the process: netstat -ano | findstr :3002
+2. Change PORT in .env file
+3. Use: npm run kill-port (if configured)
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node index.js`[39m
+❌ Port 3002 is already in use!
+Try one of these solutions:
+1. Kill the process: netstat -ano | findstr :3002
+2. Change PORT in .env file
+3. Use: npm run kill-port (if configured)
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m

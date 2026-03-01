@@ -11,12 +11,11 @@ async function test() {
 
     // ✅ CORRECT MODEL NAMES (from your available-models.json):
     const modelsToTest = [
-        "gemini-2.0-flash-001",      // Most stable
-        "gemini-pro-latest",         // Latest pro version
+        "gemini-2.0-flash-lite-001", // Lightweight & Fast
+        "gemini-flash-lite-latest",  // Latest Lite version
+        "gemini-2.0-flash-001",      // Most stable 2.0
         "gemini-flash-latest",       // Latest flash version
         "gemini-2.0-flash",          // Alternative
-        "gemini-2.5-flash",          // Newer version
-        "gemini-2.5-pro"             // If available
     ];
 
     for (const modelName of modelsToTest) {

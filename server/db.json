@@ -225,6 +225,96 @@
       ],
       "startTime": "2026-01-29T03:34:21.113Z",
       "lastActive": "2026-01-29T03:55:48.471Z"
+    },
+    "conv_1769876824604": {
+      "id": "conv_1769876824604",
+      "user": "local-user-principal",
+      "messages": [
+        {
+          "id": "f1031a73-ce58-452d-b66f-1e1cd3ada1fe",
+          "sender": "user",
+          "content": "hi nat",
+          "timestamp": "2026-01-31T16:27:04.682Z",
+          "messageType": "text"
+        },
+        {
+          "id": "5b46f609-cf44-4232-8ce4-c693d4941a05",
+          "sender": "ai",
+          "content": "I apologize, but I'm having trouble connecting to the AI service right now. Please try again in a moment.",
+          "timestamp": "2026-01-31T16:27:06.104Z",
+          "messageType": "text",
+          "modelUsed": "gemini"
+        }
+      ],
+      "startTime": "2026-01-31T16:27:04.635Z",
+      "lastActive": "2026-01-31T16:27:06.104Z"
+    },
+    "conv_1769877371767": {
+      "id": "conv_1769877371767",
+      "user": "local-user-principal",
+      "messages": [
+        {
+          "id": "2d433d2a-34d1-4d8b-a4ed-310d8f00d2bf",
+          "sender": "user",
+          "content": "hi",
+          "timestamp": "2026-01-31T16:36:14.072Z",
+          "messageType": "text"
+        },
+        {
+          "id": "19586ff8-f2f4-4911-bd18-b578b605e89d",
+          "sender": "ai",
+          "content": "I apologize, but I've hit the usage limits for the AI service. Please try again in a few minutes.",
+          "timestamp": "2026-01-31T16:36:15.434Z",
+          "messageType": "text",
+          "modelUsed": "gemini"
+        }
+      ],
+      "startTime": "2026-01-31T16:36:11.852Z",
+      "lastActive": "2026-01-31T16:36:15.434Z"
+    },
+    "6d2f7c19-c651-4200-a2e5-2f87e6fc10b0": {
+      "id": "6d2f7c19-c651-4200-a2e5-2f87e6fc10b0",
+      "user": "local-user-principal",
+      "messages": [],
+      "startTime": "2026-03-01T03:02:51.787Z",
+      "lastActive": "2026-03-01T03:02:51.787Z"
+    },
+    "04d6b2e7-f405-4203-8e7d-89efc63d2a77": {
+      "id": "04d6b2e7-f405-4203-8e7d-89efc63d2a77",
+      "user": "local-user-principal",
+      "messages": [],
+      "startTime": "2026-03-01T03:03:39.238Z",
+      "lastActive": "2026-03-01T03:03:39.239Z"
+    },
+    "conv_1772337352964": {
+      "id": "conv_1772337352964",
+      "user": "local-user-principal",
+      "messages": [],
+      "startTime": "2026-03-01T03:55:53.247Z",
+      "lastActive": "2026-03-01T03:55:53.247Z"
+    },
+    "conv_1772337483428": {
+      "id": "conv_1772337483428",
+      "user": "local-user-principal",
+      "messages": [
+        {
+          "id": "00cbf470-35fc-4865-95ea-139623c9ecb3",
+          "sender": "user",
+          "content": "hi",
+          "timestamp": "2026-03-01T03:58:03.526Z",
+          "messageType": "text"
+        },
+        {
+          "id": "47cca1c7-dc20-475a-a0eb-f5d11727cfbc",
+          "sender": "ai",
+          "content": "I'm having trouble connecting to the AI service. Please try again in a moment.",
+          "timestamp": "2026-03-01T04:04:15.717Z",
+          "messageType": "text",
+          "modelUsed": "gemini"
+        }
+      ],
+      "startTime": "2026-03-01T03:58:03.477Z",
+      "lastActive": "2026-03-01T04:04:15.717Z"
     }
   },
   "files": []

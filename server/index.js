@@ -111,12 +111,24 @@ app.get('/api/conversations', async (req, res) => {
     res.json(conversations);
 });
 
-// Get Single Conversation
+// Get Single Conversation (auto-creates if not found so frontend-generated IDs work)
 app.get('/api/conversations/:id', async (req, res) => {
     const { id } = req.params;
+    const userId = "local-user-principal";
     const db = await getDB();
-    const conversation = db.conversations[id];
-    if (!conversation) return res.status(404).json({ error: "Conversation not found" });
+    let conversation = db.conversations[id];
+    if (!conversation) {
+        // Auto-create so the frontend never gets a 404 for a new convo
+        conversation = {
+            id,
+            user: userId,
+            messages: [],
+            startTime: new Date().toISOString(),
+            lastActive: new Date().toISOString()
+        };
+        db.conversations[id] = conversation;
+        await saveDB(db);
+    }
     res.json(conversation);
 });
 
@@ -188,42 +200,142 @@ function fileToGenerativePart(path, mimeType) {
     };
 }
 
-// ✅ FIX 2: Working model list - simplified to just working models
+// Model priority list - most stable & quota-friendly first
 const WORKING_MODELS = [
-    "gemini-2.0-flash-001",      // Most stable
-    "gemini-flash-latest",       // Latest flash
-    "gemini-pro-latest",         // Latest pro
-    "gemini-2.0-flash",          // Alternative
-    "gemini-2.5-flash"           // If available
+    "gemini-2.0-flash",          // Most widely available
+    "gemini-2.0-flash-001",      // Specific stable version
+    "gemini-flash-latest",       // Latest Flash alias
+    "gemini-2.0-flash-lite",     // Lite variant (cheaper quota)
+    "gemini-2.0-flash-lite-001", // Lite specific version
+    "gemini-flash-lite-latest",  // Latest Lite alias
+    "gemini-2.5-flash",          // Newer generation
 ];
 
-// ✅ FIX 3: Simple model fallback with better error handling
-async function generateWithFallback(modelName, promptParts, history = []) {
-    try {
-        console.log(`Attempting with model: ${modelName}`);
-        const model = genAI.getGenerativeModel({
-            model: modelName,
-            generationConfig: {
-                temperature: 0.7,
-                topP: 0.8,
-                topK: 40,
-            }
-        });
+// ──────────────────────────────────────────────
+// In-memory response cache (avoids duplicate API calls)
+// ──────────────────────────────────────────────
+const responseCache = new Map();
+const CACHE_MAX_SIZE = 100;
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
-        if (history.length > 0) {
-            const chat = model.startChat({
-                history: history,
-            });
-            const result = await chat.sendMessage(promptParts);
-            return result.response.text();
-        } else {
-            const result = await model.generateContent(promptParts);
-            return result.response.text();
-        }
-    } catch (error) {
-        console.error(`Failed with model ${modelName}:`, error.message);
-        throw error;
+function getCacheKey(promptParts, mode) {
+    const str = JSON.stringify({ promptParts, mode });
+    // Simple hash
+    let h = 0;
+    for (let i = 0; i < str.length; i++) { h = (Math.imul(31, h) + str.charCodeAt(i)) | 0; }
+    return String(h);
+}
+
+function getFromCache(key) {
+    const entry = responseCache.get(key);
+    if (!entry) return null;
+    if (Date.now() - entry.ts > CACHE_TTL_MS) { responseCache.delete(key); return null; }
+    console.log('✅ Cache hit!');
+    return entry.value;
+}
+
+function setInCache(key, value) {
+    if (responseCache.size >= CACHE_MAX_SIZE) {
+        // Evict oldest
+        const oldestKey = responseCache.keys().next().value;
+        responseCache.delete(oldestKey);
     }
+    responseCache.set(key, { value, ts: Date.now() });
+}
+
+// ──────────────────────────────────────────────
+// Request queue - ensures max 1 concurrent Gemini call
+// ──────────────────────────────────────────────
+let _queueRunning = false;
+const _queue = [];
+
+function enqueueRequest(fn) {
+    return new Promise((resolve, reject) => {
+        _queue.push({ fn, resolve, reject });
+        processQueue();
+    });
+}
+
+function processQueue() {
+    if (_queueRunning || _queue.length === 0) return;
+    _queueRunning = true;
+    const { fn, resolve, reject } = _queue.shift();
+    fn().then(resolve).catch(reject).finally(() => {
+        _queueRunning = false;
+        // Small inter-request delay to respect rate limits
+        setTimeout(processQueue, 500);
+    });
+}
+
+// ──────────────────────────────────────────────
+// Exponential backoff retry helper
+// ──────────────────────────────────────────────
+async function sleep(ms) {
+    return new Promise(r => setTimeout(r, ms));
+}
+
+async function retryWithBackoff(fn, maxRetries = 3, baseDelay = 2000) {
+    let lastErr;
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+            return await fn();
+        } catch (err) {
+            lastErr = err;
+            const is429 = err.message && (err.message.includes('429') || err.message.includes('quota') || err.message.includes('rate'));
+            if (!is429) throw err; // Non-quota error - fail fast
+            const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 1000;
+            console.log(`⏳ Rate limited. Waiting ${Math.round(delay / 1000)}s before retry ${attempt + 1}/${maxRetries}...`);
+            await sleep(delay);
+        }
+    }
+    throw lastErr;
+}
+
+// ──────────────────────────────────────────────
+// Core generation function with fallback across models
+// ──────────────────────────────────────────────
+async function generateWithAllModels(promptParts, history = []) {
+    for (const modelName of WORKING_MODELS) {
+        try {
+            console.log(`🤖 Trying model: ${modelName}`);
+            const result = await retryWithBackoff(async () => {
+                const model = genAI.getGenerativeModel({
+                    model: modelName,
+                    generationConfig: { temperature: 0.7, topP: 0.8, topK: 40 }
+                });
+                if (history.length > 0) {
+                    const chat = model.startChat({ history });
+                    const r = await chat.sendMessage(promptParts);
+                    return r.response.text();
+                } else {
+                    const r = await model.generateContent(promptParts);
+                    return r.response.text();
+                }
+            }, 3, 3000);
+            console.log(`✅ Success with: ${modelName}`);
+            return result;
+        } catch (err) {
+            console.warn(`❌ ${modelName} failed after retries: ${err.message.slice(0, 80)}`);
+            // Wait before trying next model
+            await sleep(1500);
+        }
+    }
+    throw new Error('All models exhausted');
+}
+
+// Backward-compat wrapper (used in test-models endpoint)
+async function generateWithFallback(modelName, promptParts, history = []) {
+    const model = genAI.getGenerativeModel({
+        model: modelName,
+        generationConfig: { temperature: 0.7, topP: 0.8, topK: 40 }
+    });
+    if (history.length > 0) {
+        const chat = model.startChat({ history });
+        const r = await chat.sendMessage(promptParts);
+        return r.response.text();
+    }
+    const r = await model.generateContent(promptParts);
+    return r.response.text();
 }
 
 // Add Message & Generate Response
@@ -299,29 +411,22 @@ app.post('/api/conversations/:id/messages', async (req, res) => {
                     parts: [{ text: m.content }]
                 }));
 
-            // ✅ FIX 4: Simple retry logic
-            let responseText = null;
-            let lastError = null;
-
-            for (const modelName of WORKING_MODELS) {
-                try {
-                    responseText = await generateWithFallback(modelName, promptParts, history);
-                    console.log(`✅ Success with model: ${modelName}`);
-                    break;
-                } catch (error) {
-                    lastError = error;
-                    // Skip 429 errors by trying next model immediately
-                    if (!error.message.includes('429') && !error.message.includes('quota')) {
-                        await new Promise(r => setTimeout(r, 1000));
-                    }
-                    continue;
-                }
-            }
+            // Check cache first
+            const cacheKey = getCacheKey(promptParts, mode);
+            let responseText = getFromCache(cacheKey);
 
             if (!responseText) {
-                // Fallback to simple response if all models fail
-                responseText = "I apologize, but I'm having trouble connecting to the AI service right now. Please try again in a moment.";
-                console.error("All models failed:", lastError);
+                // Enqueue the request so we never send concurrent Gemini calls
+                try {
+                    responseText = await enqueueRequest(() => generateWithAllModels(promptParts, history));
+                    setInCache(cacheKey, responseText);
+                } catch (genErr) {
+                    const is429 = genErr.message && (genErr.message.includes('429') || genErr.message.includes('quota') || genErr.message.includes('rate'));
+                    responseText = is429
+                        ? "⚠️ I've hit the AI usage limits right now. Please wait a minute and try again — the rate limit resets quickly!"
+                        : "I'm having trouble connecting to the AI service. Please try again in a moment.";
+                    console.error("All models exhausted:", genErr.message);
+                }
             }
 
             aiMessage = {
